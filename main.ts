@@ -22,12 +22,10 @@ cpSync(join(repoRoot, 'game'), join(out, 'game'), { recursive: true });
 cpSync(join(repoRoot, 'screenshots'), join(out, 'screenshots'), { recursive: true });
 // The dossier is rebuilt from the copied files, so it always matches
 // exactly what the grader sees in /output.
-writeFileSync(
-  join(out, 'dossier.json'),
-  buildDossier(out, {
-    text_max_bytes: 163840,
-    screenshots: { max: 4, max_bytes: 262144 },
-    game_max_files: 993,
-    game_max_bytes: 50331648,
-  }),
-);
+const dossierOptions = {
+  text_max_bytes: 163840,
+  screenshots: { max: 4, max_bytes: 262144 },
+  game_max_files: 993,
+  game_max_bytes: 50331648,
+};
+writeFileSync(join(out, 'dossier.json'), buildDossier(out, dossierOptions));
