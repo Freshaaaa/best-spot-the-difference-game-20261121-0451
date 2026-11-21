@@ -1,6 +1,8 @@
 // main.ts — hands the game in: copies game/ and screenshots/ to /output
 // and writes /output/dossier.json with buildDossier from the kit library.
 // Standard library only; runs twice and writes the same bytes both times.
+// The output directory is /output in the grader, or MAKEFUN_OUTPUT_DIR
+// when set (local runs use a scratch directory instead).
 
 import { buildDossier } from './vendor/makefun-game.ts';
 import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -13,6 +15,8 @@ const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 mkdirSync(out, { recursive: true });
 cpSync(join(repoRoot, 'game'), join(out, 'game'), { recursive: true });
 cpSync(join(repoRoot, 'screenshots'), join(out, 'screenshots'), { recursive: true });
+// The dossier is rebuilt from the copied files, so it always matches
+// exactly what the grader sees in /output.
 writeFileSync(
   join(out, 'dossier.json'),
   buildDossier(out, {
