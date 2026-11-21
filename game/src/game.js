@@ -3,7 +3,7 @@
 // The state shape:
 //   { levels, levelIndex, level, found:Set, score, timeLeft, hintsLeft,
 //     muted, status:'playing'|'complete'|'gameover'|'final',
-//     markers:[{id,x,y,born}], hintDiff, wrong, lastTick }
+//     markers:[{id,x,y,born}], hintDiff, wrong, wrongStreak, lastTick }
 
 import { LEVELS } from './differences.js';
 import { drawPanel, drawMarkers, drawHintPulse, drawWrongMark, updateHud, showOverlay } from './render.js';
@@ -27,6 +27,7 @@ export function createGame(els) {
     hintDiff: null,
     hintUntil: 0,
     wrong: null,
+    wrongStreak: 0,
     lastTick: performance.now(),
     levelScore: 0,
   };
@@ -41,6 +42,7 @@ export function createGame(els) {
     st.markers = [];
     st.hintDiff = null;
     st.wrong = null;
+    st.wrongStreak = 0;
     st.levelScore = 0;
     st.lastTick = performance.now();
     drawPanel(els.leftCanvas, st.level, 0);
@@ -121,7 +123,12 @@ export function createGame(els) {
     } else if (ev.kind === 'wrong') {
       if (st.status !== 'playing') return;
       st.wrong = { x: ev.x, y: ev.y, born: performance.now() };
-      st.timeLeft = Math.max(0, st.timeLeft - 5); // a wrong click costs 5 seconds
+      // The penalty escalates with each mistake in a level, so careless
+      // clicking gets riskier: 1st wrong click costs 5s, 2nd costs 8s,
+      // 3rd and later cost 10s.
+      st.wrongStreak += 1;
+      const penalty = st.wrongStreak === 1 ? 5 : st.wrongStreak === 2 ? 8 : 10;
+      st.timeLeft = Math.max(0, st.timeLeft - penalty);
       playWrong();
       updateHud(els, st);
     } else if (ev.kind === 'key') {
