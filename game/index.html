@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spot the Difference — Sunny Garden, Cozy Kitchen, Space Station</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Trebuchet MS", Verdana, sans-serif;
+    background: #1c2f57;
+    color: #f7ead2;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header {
+    width: 100%;
+    max-width: 1180px;
+    padding: 14px 20px 6px;
+    text-align: center;
+  }
+  h1 { font-size: 30px; letter-spacing: 1px; color: #ffd93b; }
+  .tagline { font-size: 14px; color: #bfe3f7; margin-top: 2px; }
+  #hud {
+    width: 100%;
+    max-width: 1180px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+  }
+  #levelName { font-size: 19px; font-weight: bold; color: #ffffff; min-width: 250px; }
+  #foundCounter {
+    font-size: 19px; font-weight: bold; color: #22e07a;
+    background: rgba(255,255,255,0.08); padding: 6px 12px; border-radius: 8px;
+  }
+  #scoreValue { font-size: 17px; color: #f7c948; font-weight: bold; }
+  #timerWrap { flex: 1; min-width: 180px; }
+  #timeText { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+  #timeBar { height: 12px; background: rgba(255,255,255,0.15); border-radius: 6px; overflow: hidden; }
+  #timeFill { height: 100%; width: 100%; background: #22a06b; border-radius: 6px; transition: width 0.2s linear; }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: bold;
+    background: #f7c948; color: #1c2f57; border: none; border-radius: 8px;
+    padding: 9px 14px; cursor: pointer;
+  }
+  button:hover { background: #ffd93b; }
+  button:disabled { background: #8a8a8a; color: #ddd; cursor: default; }
+  #muteButton { background: #5b8fd4; color: #fff; }
+  #muteButton:hover { background: #7fb3e8; }
+  #restartButton { background: #e78ac3; color: #1c2f57; }
+  #panels {
+    display: flex; gap: 26px; justify-content: center;
+    padding: 4px 20px 10px; flex-wrap: wrap;
+  }
+  .panel { text-align: center; position: relative; }
+  .panelLabel {
+    font-size: 15px; font-weight: bold; letter-spacing: 2px;
+    color: #bfe3f7; margin-bottom: 6px; text-transform: uppercase;
+  }
+  canvas {
+    width: 520px; height: 520px; max-width: 46vw; max-height: 46vw;
+    border: 4px solid #f7ead2; border-radius: 10px; background: #0d1b3e;
+    display: block;
+  }
+  #rightPanel { cursor: crosshair; }
+  footer {
+    width: 100%; max-width: 1180px; padding: 6px 20px 18px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  }
+  #levelDots { font-size: 18px; letter-spacing: 6px; color: #f7c948; }
+  #keys { font-size: 13px; color: #bfe3f7; }
+  #overlay {
+    position: fixed; inset: 0; background: rgba(10, 18, 48, 0.82);
+    display: none; align-items: center; justify-content: center; z-index: 10;
+  }
+  #overlayCard {
+    background: #f7ead2; color: #1c2f57; border-radius: 16px;
+    padding: 34px 44px; text-align: center; max-width: 520px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  #overlayTitle { font-size: 32px; margin-bottom: 12px; }
+  #overlayBody { font-size: 17px; line-height: 1.55; margin-bottom: 22px; }
+  #overlayButton { font-size: 18px; padding: 12px 26px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SPOT THE DIFFERENCE</h1>
+  <div class="tagline">Two pictures, almost the same. Find every difference on the right before the clock runs out!</div>
+</header>
+
+<div id="hud">
+  <span id="levelName">Level 1 — Sunny Garden</span>
+  <span id="foundCounter">Found 0/8</span>
+  <span id="scoreValue">Score 0</span>
+  <div id="timerWrap">
+    <div id="timeText">3:00</div>
+    <div id="timeBar"><div id="timeFill"></div></div>
+  </div>
+  <button id="hintButton" type="button">Hint (3) [H]</button>
+  <button id="muteButton" type="button">Sound: On [M]</button>
+</div>
+
+<div id="panels">
+  <div class="panel">
+    <div class="panelLabel">Original</div>
+    <canvas id="leftPanel" width="520" height="520"></canvas>
+  </div>
+  <div class="panel">
+    <div class="panelLabel">Find the differences &darr;</div>
+    <canvas id="rightPanel" width="520" height="520"></canvas>
+  </div>
+</div>
+
+<footer>
+  <span id="levelDots">◉ ○ ○</span>
+  <span id="keys">Click the right picture to mark a difference &nbsp;·&nbsp; H hint &nbsp;·&nbsp; R restart &nbsp;·&nbsp; N next level &nbsp;·&nbsp; M mute</span>
+  <button id="restartButton" type="button">Restart Level [R]</button>
+</footer>
+
+<div id="overlay">
+  <div id="overlayCard">
+    <div id="overlayTitle"></div>
+    <div id="overlayBody"></div>
+    <button id="overlayButton" type="button"></button>
+  </div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
